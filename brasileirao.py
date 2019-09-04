@@ -75,14 +75,16 @@ def ids_dos_times_de_um_jogo(dados, id_jogo):
 4. A próxima função recebe a id_numerica de um time e deve retornar o seu 'nome-comum'.
 '''
 def nome_do_time(dados, id_time):
-   return dados[equipes][id_jogo][nome-comum]
+   return dados['equipes'][id_time]['nome-comum']
 
 '''
 5. A próxima função "cruza" as duas anteriores. Recebe uma id de um jogo
 e retorna os "nome-comum" dos dois times.
 '''
 def nomes_dos_times_de_um_jogo(dados, id_jogo):
-   pass
+   time1 = dados['fases']['2700']['jogos']['id'][id_jogo]['time1']
+   time2 = dados['fases']['2700']['jogos']['id'][id_jogo]['time2']
+   return dados['equipes'][time1]['nome-comum'], dados['equipes'][time2]['nome-comum']
 
 '''
 6. Façamos agora a busca "ao contrário". Conhecendo
@@ -91,7 +93,10 @@ o nome-comum de um time, queremos saber a sua id.
 Se o nome comum não existir, retorne 'não encontrado'.
 '''
 def id_do_time(dados, nome_time):
-    pass
+   for ids in dados['equipes']:
+      if nome_time == dados['equipes'][ids]['nome-comum']:
+         return ids
+   return 'não encontrado'
 
 '''
 7. Agora, façamos uma busca "fuzzy". Queremos procurar por 'Fla'
@@ -107,14 +112,29 @@ Sua resposta deve ser uma lista de ids de times que "batem"
 com a pesquisa (e pode ser vazia, se não achar ninguém).
 '''
 def busca_imprecisa_por_nome_de_time(dados, nome_time):
-    pass
+   lista_times = []
+   times = dados['equipes']
+   for time in times:
+      in_nome = nome_time in times[time]['nome']
+      in_comum = nome_time in times[time]['nome-comum']
+      in_slug = nome_time in times[time]['nome-slug']
+      in_sigla = nome_time in times[time]['sigla']
+      if in_nome or in_comum or in_slug or in_sigla:
+         lista_times.append(time)
+   return lista_times
+
 
 '''
 8. Agora, a ideia é receber a id de um time e retornar as
 ids de todos os jogos em que ele participou.
 '''
 def ids_de_jogos_de_um_time(dados, time_id):
-    pass
+   lista_de_jogos = []
+   for ids in dados['fases']['2700']['jogos']['id']:
+      if time_id == dados['fases']['2700']['jogos']['id'][ids]['time1'] or time_id == dados['fases']['2700']['jogos']['id'][ids]['time2']:
+         lista_de_jogos.append(ids)
+   return lista_de_jogos
+
 
 '''
 9. Usando as ids dos jogos em que um time participou, podemos descobrir
@@ -125,7 +145,17 @@ Note que essa função recebe o nome-comum do time, não a sua id.
 Ela retorna uma lista das datas em que o time jogou.
 '''
 def datas_de_jogos_de_um_time(dados, nome_time):
-    pass
+   lista_datas_jogos = []
+   for ids in dados['equipes']:
+      if nome_time == dados['equipes'][ids]['nome-comum']:
+         numero_do_id = ids
+
+   for ids in dados['fases']['2700']['jogos']['id']:
+      if numero_do_id == dados['fases']['2700']['jogos']['id'][ids]['time1'] or numero_do_id == dados['fases']['2700']['jogos']['id'][ids]['time2']:
+         lista_datas_jogos.append(dados['fases']['2700']['jogos']['id'][ids]['data'])
+   return lista_datas_jogos
+
+
 
 '''
 10. A próxima função recebe apenas o dicionário dos dados do brasileirão.
@@ -133,7 +163,17 @@ def datas_de_jogos_de_um_time(dados, nome_time):
 Ela devolve um dicionário, com quantos gols cada time fez.
 '''
 def dicionario_de_gols(dados):
-    pass
+   gols_dos_time = {}
+   for time in dados['equipes']:
+      gols_dos_time[time] = 0
+      for jogo in dados['fases']['2700']['jogos']['id']:
+         if dados['fases']['2700']['jogos']['id'][jogo]['time1'] == time:
+            gols_dos_time[time] += int(dados['fases']['2700']['jogos']['id'][jogo]['placar1'])
+         elif dados['fases']['2700']['jogos']['id'][jogo]['time2'] == time:
+            gols_dos_time[time] += int(dados['fases']['2700']['jogos']['id'][jogo]['placar2'])
+
+   return gols_dos_time
+
 
 '''
 11. A próxima função recebe apenas o dicionário dos dados do brasileirão.
@@ -141,7 +181,10 @@ def dicionario_de_gols(dados):
 Ela devolve a id do time que fez mais gols no campeonato.
 '''
 def time_que_fez_mais_gols(dados):
-    pass
+   gols_dos_time = dicionario_de_gols(dados)
+   time = sorted(gols_dos_time, key=gols_dos_time.get)[
+      len(gols_dos_time)-1]
+   return time
 
 '''
 12. A próxima função recebe apenas o dicionário dos dados do brasileirão
@@ -153,7 +196,13 @@ Ou seja, as chaves são ids de estádios e os valores associados,
 o número de vezes que um jogo ocorreu no estádio.
 '''
 def dicionario_id_estadio_e_nro_jogos(dados):
-    pass
+   jogos_por_estadio = {}
+   for jogo in dados['fases']['2700']['jogos']['id']:
+      if(dados['fases']['2700']['jogos']['id'][jogo]['estadio_id'] in jogos_por_estadio):
+         jogos_por_estadio[dados['fases']['2700']['jogos']['id'][jogo]['estadio_id']] += 1
+      else:
+         jogos_por_estadio[dados['fases']['2700']['jogos']['id'][jogo]['estadio_id']] = 1
+   return jogos_por_estadio
 
 '''
 13. A próxima função recebe apenas o dicionário dos dados do brasileirão
@@ -167,14 +216,20 @@ número daí. Não basta retornar o valor correto, tem que acessar os dados
 fornecidos.
 '''
 def qtos_libertadores(dados):
-    pass
+    return int(dados['fases']['2700']['faixas-classificacao']['classifica1']['faixa'].split('-')[1])
 
 '''
 14. A próxima função recebe um tamanho, e retorna uma lista
 com len(lista) = tamanho, contendo as ids dos times melhor classificados.
 '''
 def ids_dos_melhor_classificados(dados, numero):
-    pass
+   lista_melhores_classificados  = []
+   tabela = dados['fases']['2700']['classificacao']['grupo']['Único']
+   contador = 0
+   while contador < numero:
+      lista_melhores_classificados.append(tabela[contador])
+      contador += 1
+   return lista_melhores_classificados
 
 '''
 15. A próxima função usa as duas anteriores para retornar uma 
@@ -187,7 +242,15 @@ para obter o número correto de times a retornar.
 A função só recebe os dados do brasileirão.
 '''
 def classificados_libertadores(dados):
-    pass
+   class_libertadores = dados['fases']['2700']['faixas-classificacao']['classifica1']['faixa'].split('-')[1]
+   classif = []
+   tabela = dados['fases']['2700']['classificacao']['grupo']['Único']
+   contador = 0
+   while contador < int(class_libertadores):
+      classif.append(tabela[contador])
+      contador += 1
+   return classif  
+
 
 '''
 16. Da mesma forma que podemos obter a informação dos times classificados
@@ -200,7 +263,15 @@ Consulte a zona de rebaixamento do dicionário de dados, não deixe
 ela chumbada da função.
 '''
 def rebaixados(dados):
-    pass
+   class_rebaixados = dados['fases']['2700']['faixas-classificacao']['classifica3']['faixa'].split('-')
+   reb = []
+   tabela = dados['fases']['2700']['classificacao']['grupo']['Único']
+   contador = int(class_rebaixados[0]) -1
+   while contador <= int(class_rebaixados[1]) -1:
+      reb.append(tabela[contador])
+      contador += 1
+
+   return reb
 
 '''
 17. A próxima função recebe (além do dicionario de dados do brasileirão) uma id de time.
@@ -210,6 +281,10 @@ Ela retorna a classificação desse time no campeonato.
 Se a id nao for válida, ela retorna a string 'não encontrado'.
 '''
 def classificacao_do_time_por_id(dados, time_id):
-    pass
+   for time in dados['fases']['2700']['classificacao']['grupo']['Único']:
+      if time_id == time:
+         classificacao = int(dados['fases']['2700']['classificacao']['grupo']['Único'].index(time))+1
+         return classificacao
+   return 'não encontrado'
 
 
